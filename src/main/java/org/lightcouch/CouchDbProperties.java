@@ -44,6 +44,16 @@ public class CouchDbProperties {
 	public CouchDbProperties() {
 		// default constructor
 	}
+	
+	public CouchDbProperties(CouchDbProperties other) {
+	   this.dbName = other.dbName;
+      this.createDbIfNotExist = other.createDbIfNotExist;
+      this.protocol = other.protocol;
+      this.host = other.host;
+      this.port = other.port;
+      this.username = other.username;
+      this.password = other.password;
+	}
 
 	public CouchDbProperties(String dbName, boolean createDbIfNotExist, String protocol,
 			String host, int port, String username, String password) {
@@ -174,7 +184,7 @@ public class CouchDbProperties {
 	}
 
 	public void clearPassword() {
-		setPassword("");
-		setPassword(null);
+//		setPassword("");
+//		setPassword(null);
 	}
 }

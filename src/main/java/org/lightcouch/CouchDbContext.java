@@ -22,6 +22,8 @@ import static org.lightcouch.URIBuilder.*;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.List;
@@ -48,8 +50,11 @@ public class CouchDbContext {
 
 	private CouchDbClientBase dbc;
 
+   private CouchDbProperties props;
+
 	CouchDbContext(CouchDbClientBase dbc, CouchDbProperties props) {
 		this.dbc = dbc;
+      this.props = props;
 		if (props.isCreateDbIfNotExist()) {
 			createDB(props.getDbName());
 		} else {
@@ -104,7 +109,27 @@ public class CouchDbContext {
 			close(instream);
 		}
 	}
-
+	
+	/**
+	 * Creates a client with the same type and connection parameters as the one that this context belongs to.
+	 * @param dbName
+	 * @param createDbIfNotExist whether to create the database if it does not already exist
+	 * @return The client for accessing the database. May be safely cast to the original client class.
+	 * @throws CouchDbException 
+	 */
+	public CouchDbClientBase createDbClient(String dbName, boolean createDbIfNotExist) throws CouchDbException {
+	   Class<? extends CouchDbClientBase> clientClass = dbc.getClass();
+	   try{
+         Constructor<? extends CouchDbClientBase> constructor = clientClass.getConstructor(CouchDbProperties.class);
+         CouchDbProperties properties = new CouchDbProperties(props);
+         properties.setDbName(dbName);
+         properties.setCreateDbIfNotExist(createDbIfNotExist);
+         return constructor.newInstance(properties);
+      }catch(ReflectiveOperationException e){
+         throw new CouchDbException("Unable to construct client class, " + dbc.getClass().getName() + ", for dbName: " + dbName, e);
+      }
+	}
+	
 	/**
 	 * @return {@link CouchDbInfo} Containing the DB server info.
 	 */
