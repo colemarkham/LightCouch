@@ -16,14 +16,15 @@
 
 package org.lightcouch;
 
-import static org.lightcouch.CouchDbUtil.*;
-import static org.lightcouch.URIBuilder.*;
+import static org.lightcouch.CouchDbUtil.assertNotEmpty;
+import static org.lightcouch.CouchDbUtil.close;
+import static org.lightcouch.CouchDbUtil.getAsString;
+import static org.lightcouch.URIBuilder.buildUri;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.List;
@@ -51,6 +52,8 @@ public class CouchDbContext {
 	private CouchDbClientBase dbc;
 
    private CouchDbProperties props;
+   
+   private ResourceProvider resourceProvider = new ClasspathResourceProvider();
 
 	CouchDbContext(CouchDbClientBase dbc, CouchDbProperties props) {
 		this.dbc = dbc;
@@ -61,6 +64,14 @@ public class CouchDbContext {
 			serverVersion(); // pre warm up client
 		}
 	}
+
+	public void setResourceProvider(ResourceProvider resourceProvider){
+      this.resourceProvider = resourceProvider;
+   }
+	
+	public ResourceProvider getResourceProvider(){
+      return resourceProvider;
+   }
 
 	/**
 	 * Requests CouchDB deletes a database.

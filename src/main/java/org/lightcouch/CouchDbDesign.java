@@ -18,8 +18,6 @@ package org.lightcouch;
 
 import static java.lang.String.format;
 import static org.lightcouch.CouchDbUtil.assertNotEmpty;
-import static org.lightcouch.CouchDbUtil.listResources;
-import static org.lightcouch.CouchDbUtil.readFile;
 import static org.lightcouch.CouchDbUtil.removeExtension;
 import static org.lightcouch.URIBuilder.buildUri;
 
@@ -146,7 +144,7 @@ public class CouchDbDesign {
 	 */
 	public List<DesignDocument> getAllFromDesk() {
 		final List<DesignDocument> designDocsList = new ArrayList<DesignDocument>();
-		for (String docName : listResources(format("%s/", DESIGN_DOCS_DIR))) {
+		for (String docName : dbc.context().getResourceProvider().listResources(format("%s/", DESIGN_DOCS_DIR))) {
 			designDocsList.add(getFromDesk(docName));
 		} 
 		return designDocsList;
@@ -161,7 +159,7 @@ public class CouchDbDesign {
 		assertNotEmpty(id, "id");
 		final DesignDocument dd = new DesignDocument();
 		final String rootPath = format("%s/%s/", DESIGN_DOCS_DIR, id);
-		final List<String> elements = listResources(rootPath);
+		final List<String> elements = dbc.context().getResourceProvider().listResources(rootPath);
 		if(elements == null) {
 			throw new IllegalArgumentException("Design docs directory cannot be empty.");
 		}
@@ -170,12 +168,12 @@ public class CouchDbDesign {
 		if(elements.contains(VIEWS)) { 
 			views = new HashMap<String, MapReduce>();
 			final String viewsPath = format("%s%s/", rootPath, VIEWS);
-			for (String viewDirName : listResources(viewsPath)) { // views sub-dirs
+			for (String viewDirName : dbc.context().getResourceProvider().listResources(viewsPath)) { // views sub-dirs
 				final MapReduce mr = new MapReduce();
 				final String viewPath = format("%s%s/", viewsPath, viewDirName);
-				final List<String> dirList = listResources(viewPath);
+				final List<String> dirList = dbc.context().getResourceProvider().listResources(viewPath);
 				for (String fileName : dirList) { // view files
-					final String def = readFile(format("/%s%s", viewPath, fileName));
+					final String def = dbc.context().getResourceProvider().readFile(format("/%s%s", viewPath, fileName));
 					if(MAP_JS.equals(fileName))
 						mr.setMap(def);
 					else if(REDUCE_JS.equals(fileName))
@@ -203,8 +201,8 @@ public class CouchDbDesign {
 		if(elements.contains(element)) {
 			functionsMap = new HashMap<String, String>();
 			String path = format("%s%s/", rootPath, element);
-			for (String fileName : listResources(path)) {
-				String contents = readFile(format("/%s%s", path, fileName));
+			for (String fileName : dbc.context().getResourceProvider().listResources(path)) {
+				String contents = dbc.context().getResourceProvider().readFile(format("/%s%s", path, fileName));
 				functionsMap.put(removeExtension(fileName), contents);
 			}
 		}
@@ -214,9 +212,9 @@ public class CouchDbDesign {
 	public String readContent(List<String> elements, String rootPath, String element) {
 		if(elements.contains(element)) { 
 			String path = format("%s%s/", rootPath, element);
-			List<String> dirList = listResources(path);
+			List<String> dirList = dbc.context().getResourceProvider().listResources(path);
 			for (String file : dirList) {
-				String contents = readFile(format("/%s%s", path, file));
+				String contents = dbc.context().getResourceProvider().readFile(format("/%s%s", path, file));
 				return contents;
 			}
 		} 

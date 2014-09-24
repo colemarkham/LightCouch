@@ -549,12 +549,12 @@ public class View {
 	public View tempView(String id) {
 		assertNotEmpty(id, "id");
 		String viewPath = format("%s/%s/", TEMP_VIEWS_DIR, id);
-		List<String> dirList = listResources(viewPath);
+		List<String> dirList = dbc.context().getResourceProvider().listResources(viewPath);
 		assertNotEmpty(dirList, "Temp view directory");
 
 		mapRedtempViewM = new MapReduce();
 		for (String mapRed : dirList) {
-			String def = readFile(format("/%s%s", viewPath, mapRed));
+			String def = dbc.context().getResourceProvider().readFile(format("/%s%s", viewPath, mapRed));
 			if(MAP_JS.equals(mapRed))
 				mapRedtempViewM.setMap(def);
 			else if(REDUCE_JS.equals(mapRed))
